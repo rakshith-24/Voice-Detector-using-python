@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Voice Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding-top: 50px; }
+        .container { max-width: 600px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .video-container { margin-top: 20px; }
+        .btn-record { background-color: #ff4b2b; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container text-center">
+    <h2>Emotion Detector</h2>
+    <p class="text-muted">Speak or type your mood below</p>
+
+    <form action="/predict" method="POST" id="predictionForm">
+        <div class="input-group mb-3">
+            <input type="text" name="text" id="transcript" class="form-control" placeholder="Type here or use voice..." required>
+            <button type="button" class="btn btn-record" onclick="startDictation()">🎤 Speak</button>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Analyze Emotion</button>
+    </form>
+
+    {% if prediction %}
+        <div class="mt-4">
+            <h4>Detected Emotion: <span class="badge bg-success">{{ prediction }}</span></h4>
+        </div>
+    {% endif %}
+
+    {% if videos %}
+        <div class="video-container">
+            <h5>Suggested Videos for you:</h5>
+            {% for video in videos %}
+                <div class="mb-3">
+                    <iframe width="100%" height="250"
+                        src="{{ video.replace('watch?v=', 'embed/') }}"
+                        frameborder="0" allowfullscreen>
+                    </iframe>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function startDictation() {
+        if (window.hasOwnProperty('webkitSpeechRecognition')) {
+            var recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = "en-US";
+            recognition.start();
+
+            recognition.onresult = function(e) {
+                document.getElementById('transcript').value = e.results[0][0].transcript;
+                recognition.stop();
+            };
+
+            recognition.onerror = function(e) {
+                recognition.stop();
+                alert("Speech recognition error. Please try again.");
+            }
+        } else {
+            alert("Your browser does not support speech recognition. Please use Chrome.");
+        }
+    }
+</script>
+
+</body>
+</html>
